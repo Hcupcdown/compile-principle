@@ -1,8 +1,10 @@
 #create by cup&cdown
 #2019-5-20
 #compile principle LL(1)
-import re
-import copy
+
+import re           #正则匹配的库
+import copy         #用于深拷贝的库
+
 #分析表类
 class analysis_table:
     grammar={}  #输入文法
@@ -57,7 +59,6 @@ class analysis_table:
         
     #求first集的递归函数
     def first_aggregate(self,i):
-
         new_first=[]
         now_relu=self.grammar[i]
         for j in now_relu:                          #如果j是非终结符
@@ -111,7 +112,6 @@ class analysis_table:
 
     #构造分析表
     def generate_analysis_table(self):
-        
         self.ter.append('#')                                       #在终结符中加入’#‘
         self.table=[['error' for i in range(len(self.ter))] for i in range(len(self.nter))]             #生成存放表的二维数组
         temporary_firt=copy.deepcopy(self.first)                                                                     #临时用first集
@@ -210,7 +210,7 @@ def translate(str):
     str = re.sub(r"\w+",'i',str)+'#'           #输入字符串
     return str
 
-
+#主程序
 if __name__=='__main__':
 
     #文法
