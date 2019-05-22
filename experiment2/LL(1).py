@@ -2,8 +2,8 @@
 #2019-5-20
 #compile principle LL(1)
 
-import re           #正则匹配的库
-import copy         #用于深拷贝的库
+import re
+import copy
 
 #分析表类
 class analysis_table:
@@ -15,8 +15,11 @@ class analysis_table:
     follow={}   #follow集
 
     #初始化函数
-    def __init__(self,grammar):
-        self.grammar=grammar
+    def __init__(self):
+        num=int(input("文法规则条数："))
+        for i in range(num):
+            key,value=input().split("->")
+            self.grammar[key]=value
 
     #消除左递归
     def eliminate_recursion(self):
@@ -50,15 +53,16 @@ class analysis_table:
 
         #求终结符和非终结符集合
         self.nter=list(new_grammar.keys())     #非终结符
-        for i in self.nter:                    #查找终结符
-            for j in new_grammar[i]:
-                for k in j:
+        for now_nter in self.nter:                    #查找终结符
+            for now_relu in new_grammar[i]:
+                for k in now_relu:
                     if (not k in self.nter) and(not k== '0'):
                         self.ter.append(k)        #终结符
         self.ter=list(set(self.ter))              #去除相同元素
         
     #求first集的递归函数
     def first_aggregate(self,i):
+
         new_first=[]
         now_relu=self.grammar[i]
         for j in now_relu:                          #如果j是非终结符
@@ -112,6 +116,7 @@ class analysis_table:
 
     #构造分析表
     def generate_analysis_table(self):
+        
         self.ter.append('#')                                       #在终结符中加入’#‘
         self.table=[['error' for i in range(len(self.ter))] for i in range(len(self.nter))]             #生成存放表的二维数组
         temporary_firt=copy.deepcopy(self.first)                                                                     #临时用first集
@@ -210,16 +215,8 @@ def translate(str):
     str = re.sub(r"\w+",'i',str)+'#'           #输入字符串
     return str
 
-#主程序
+#主程序段
 if __name__=='__main__':
-
-    #文法
-    grammar={
-        'E':'E+T|T',
-        'T':'T*F|F',
-        'F':'(E)|i'
-    }
-
-    analy_tab=analysis_table(grammar)
+    analy_tab=analysis_table()
     str=translate(input("请输入要判断的句子:"))
     analy_tab.analysis(str)
