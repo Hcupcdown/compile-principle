@@ -16,25 +16,43 @@ class analysis_table:
 
     #初始化函数
     def __init__(self):
-        num=int(input("文法规则条数："))
+        num=int(input("请输入文法规则条数："))
         for i in range(num):
-            key,value=input().split("->")
+            key,value=input().split("::=")
             self.grammar[key]=value
 
     #消除左递归
     def eliminate_recursion(self):
-        initial_nter=self.grammar.keys()
+        initial_nter=list(self.grammar.keys())
         new_grammar={}                              #新的文法
-
-        #处理原文法，消除左递归
+        j=0
+        length=len(initial_nter)
+        i=length-1
+        while i>=0:
+            self.grammar[initial_nter[i]]=self.grammar[initial_nter[i]].split('|')
+            j=length-1
+            while j>=i+1:
+                for k in self.grammar[initial_nter[i]]:
+                    #对于所有形如Ui::=Ujy的规则
+                    if initial_nter[j]==k[0] and len(k)>=2:
+                        #将Ui::=Ujy替换为Ui::=x1y|x2y|……|xny
+                        self.grammar[initial_nter[i]].remove(k)
+                        for new_list in self.grammar[initial_nter[j]]:
+                            self.grammar[initial_nter[i]].append(new_list+k[1:])
+                        self.grammar.pop(initial_nter[j])
+                        self.grammar
+                j-=1
+            i-=1
+        initial_nter=self.grammar.keys()
+        #处理原文法，消除直接左递归
         for i in initial_nter:
-            self.grammar[i]=self.grammar[i].split('|')
+            
             now_relu=self.grammar[i]                     #当前处理的那一条文法
             flag=False
             alpha=[]
             beta=[]
             for now_relu in self.grammar[i]:
-                if i == now_relu[0]:               #如果是左递归
+                if i == now_relu[0]:               #如果是直接左递归
                     alpha.append(now_relu[1:])     #递归符号右的符号
                     flag=True
                 else:
@@ -54,10 +72,11 @@ class analysis_table:
         #求终结符和非终结符集合
         self.nter=list(new_grammar.keys())     #非终结符
         for now_nter in self.nter:                    #查找终结符
-            for now_relu in new_grammar[i]:
+            for now_relu in new_grammar[now_nter]:
                 for k in now_relu:
                     if (not k in self.nter) and(not k== '0'):
-                        self.ter.append(k)        #终结符
+                        if (not k in self.ter):
+                            self.ter.append(k)        #终结符
         self.ter=list(set(self.ter))              #去除相同元素
         
     #求first集的递归函数
@@ -140,7 +159,7 @@ class analysis_table:
         self.follow_agg()                   #构造follow集
         self.generate_analysis_table()
         self.show()
-        analysis_stack=['#','E']            #分析栈
+        analysis_stack=['#',self.nter[0]]           #初始化分析栈
         i=0
         print("分析过程为：")
         while i < len(str):
@@ -210,7 +229,7 @@ class analysis_table:
             print("}")
         print()
         
-#处理输入字符串
+#处理输入字符串 用于测试"age+(80*fd)"
 def translate(str):
     str = re.sub(r"\w+",'i',str)+'#'           #输入字符串
     return str
@@ -218,5 +237,6 @@ def translate(str):
 #主程序段
 if __name__=='__main__':
     analy_tab=analysis_table()
-    str=translate(input("请输入要判断的句子:"))
+    #str=translate(input("请输入要判断的句子:"))
+    str=input("请输入要判断的句子：")+'#'
     analy_tab.analysis(str)
